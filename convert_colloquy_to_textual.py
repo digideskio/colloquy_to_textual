@@ -193,7 +193,5 @@ if __name__ == '__main__':
         print "Usage: %s <colloquy_path>"
         sys.exit(1)
     
-    iso_date_format = 0
-
-    cc = ColloquyConvertor(directory_path=sys.argv[1], iso_date_format)
+    cc = ColloquyConvertor(directory_path=sys.argv[1], iso_date_format=0)
     cc.run()
