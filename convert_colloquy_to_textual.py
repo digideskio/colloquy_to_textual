@@ -24,13 +24,18 @@ __license__ = 'New BSD'
 
 
 class ColloquyConvertor(object):
-    message_format = u"[%(month)02d/%(day)02d/%(year)4d -:- %(hour)02d:%(minute)02d:%(second)02d %(ampm)s] %(nick)s: %(message)s\n"
-    event_format = u"[%(month)02d/%(day)02d/%(year)4d -:- %(hour)02d:%(minute)02d:%(second)02d %(ampm)s] %(event)s\n"
-    
-    def __init__(self, directory_path, network='irc.freenode.net'):
+
+    def __init__(self, directory_path, network='irc.freenode.net', iso_date_format=0):
         self.colloquy_dir = directory_path
         self.converted_path = os.path.join(directory_path, 'converted')
         self.network = network
+        self.iso_date_format = iso_date_format
+        if self.iso_date_format:
+            self.message_format = u"[%(year)4d-%(month)02d-%(day)02dT%(hour)02d-%(minute)02d-%(second)02d] %(nick)s: %(message)s\n"
+            self.event_format   = u"[%(year)4d-%(month)02d-%(day)02dT%(hour)02d-%(minute)02d-%(second)02d] %(event)s\n"
+        else:
+            self.message_format = u"[%(month)02d/%(day)02d/%(year)4d -:- %(hour)02d:%(minute)02d:%(second)02d %(ampm)s] %(nick)s: %(message)s\n"
+            self.event_format = u"[%(month)02d/%(day)02d/%(year)4d -:- %(hour)02d:%(minute)02d:%(second)02d %(ampm)s] %(event)s\n"    
     
     def get_transcript_list(self):
         path = os.path.join(self.colloquy_dir, '*.colloquyTranscript')
@@ -89,15 +94,18 @@ class ColloquyConvertor(object):
             ampm = 'AM'
             hour = date.hour
             
-            if date.hour > 12:
-                ampm = 'PM'
-                hour = hour - 12
+            if self.iso_date_format:
+                ampm = ''
+            else:
+                if date.hour > 12:
+                    ampm = 'PM'
+                    hour = hour - 12
             
-            if date.hour == 0:
-                hour = 12
+                if date.hour == 0:
+                    hour = 12
             
-            if date.hour == 12:
-                ampm = 'PM'
+                if date.hour == 12:
+                    ampm = 'PM'
             
             clean_message = self.clean_message(message)
             message_data.append({
@@ -119,15 +127,18 @@ class ColloquyConvertor(object):
         ampm = 'AM'
         hour = date.hour
         
-        if date.hour > 12:
-            ampm = 'PM'
-            hour = hour - 12
+        if self.iso_date_format:
+            ampm = ''
+        else:
+            if date.hour > 12:
+                ampm = 'PM'
+                hour = hour - 12
         
-        if date.hour == 0:
-            hour = 12
+            if date.hour == 0:
+                hour = 12
         
-        if date.hour == 12:
-            ampm = 'PM'
+            if date.hour == 12:
+                ampm = 'PM'
         
         clean_message = self.clean_message(element.message)
         return {
@@ -182,5 +193,7 @@ if __name__ == '__main__':
         print "Usage: %s <colloquy_path>"
         sys.exit(1)
     
-    cc = ColloquyConvertor(directory_path=sys.argv[1])
+    iso_date_format = 0
+
+    cc = ColloquyConvertor(directory_path=sys.argv[1], iso_date_format)
     cc.run()
